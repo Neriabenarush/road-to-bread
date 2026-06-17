@@ -49,6 +49,14 @@ td.t{text-align:left;white-space:nowrap;font-weight:600;}
 .sumtotal{display:flex;justify-content:space-between;border-top:2px solid var(--accent);margin-top:8px;padding-top:12px;font-family:'Frank Ruhl Libre',Georgia,serif;font-size:21px;font-weight:700;color:var(--brown);}
 .note{font-size:12px;color:#a8997f;margin-top:12px;line-height:1.6;}
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;}
+.geo{display:none;align-items:center;gap:8px;font-size:13px;padding:9px 13px;border-radius:10px;margin-top:10px;}
+.geo.show{display:flex;}
+.geo.load{background:#f3e8d2;color:var(--brown);}
+.geo.ok{background:#e9f1e6;color:var(--ok);}
+.geo.warn{background:var(--warnbg);color:var(--warnink);}
+.geo .ic{font-weight:700;font-size:15px;}
+.spin{width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:geospin .7s linear infinite;flex-shrink:0;}
+@keyframes geospin{to{transform:rotate(360deg);}}
 
 .quote{background:var(--cream);border:1px solid var(--line);border-radius:16px;padding:30px 34px;margin-top:18px;display:none;box-shadow:0 3px 18px rgba(90,62,43,.08);}
 .qhead{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid var(--accent);padding-bottom:14px;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
@@ -105,6 +113,7 @@ td.t{text-align:left;white-space:nowrap;font-weight:600;}
           <div style="flex:0 0 150px;"><label for="delivFee">דמי משלוח (₪)</label><input id="delivFee" type="number" min="0" step="5" placeholder="אוטומטי / ידני" /></div>
         </div>
         <div class="note" id="feeNote">הזן כתובת והדמים יחושבו לבד לפי מרחק (אפשר גם לעדכן ידנית).</div>
+        <div class="geo" id="geoStatus" aria-live="polite"></div>
       </div>
     </div>
 
@@ -274,18 +283,21 @@ td.t{text-align:left;white-space:nowrap;font-weight:600;}
   }
   var geoTimer;
   function scheduleGeocode(){ clearTimeout(geoTimer); geoTimer=setTimeout(computeFee,800); }
+  function setGeo(state,html){ var g=$('geoStatus'); if(!g) return; g.className='geo show '+state; g.innerHTML=html; }
+  function clearGeo(){ var g=$('geoStatus'); if(!g) return; g.className='geo'; g.innerHTML=''; }
   function computeFee(){
     if($('fulfillment').value!=='delivery') return;
     var addr=$('addr').value.trim();
-    if(!addr){ $('feeNote').textContent='הזן כתובת והדמים יחושבו לבד לפי מרחק (אפשר גם לעדכן ידנית).'; return; }
+    if(!addr){ clearGeo(); return; }
     var br=curBranch();
-    $('feeNote').textContent='מחשב דמי משלוח…';
+    setGeo('load','<span class="spin"></span><span>מזהה כתובת…</span>');
     geocode(addr).then(function(loc){
-      if(!loc) loc=cityFallback(addr);
-      if(!loc){ $('feeNote').textContent='לא זוהתה הכתובת — הזן דמי משלוח ידנית.'; return; }
-      var road=hav(br.lat,br.lng,loc.lat,loc.lng)*ROAD;
-      $('delivFee').value=tier(road);
-      $('feeNote').textContent='מרחק כ-'+Math.round(road)+' ק״מ מהסניף · ניתן לעדכן ידנית';
+      var byCity=false;
+      if(!loc){ loc=cityFallback(addr); byCity=!!loc; }
+      if(!loc){ setGeo('warn','<span class="ic">⚠</span><span>לא זוהתה הכתובת — אפשר להזין דמי משלוח ידנית</span>'); return; }
+      var road=hav(br.lat,br.lng,loc.lat,loc.lng)*ROAD, fee=tier(road);
+      $('delivFee').value=fee;
+      setGeo('ok','<span class="ic">✓</span><span>'+(byCity?'זוהה לפי עיר':'כתובת זוהתה')+' · כ-'+Math.round(road)+' ק״מ · דמי משלוח '+fmt(fee)+'</span>');
       renderResult();
     });
   }
@@ -335,10 +347,10 @@ td.t{text-align:left;white-space:nowrap;font-weight:600;}
       else { html+='<div class="chip warn">משלוח: הזן כתובת (הדמים יחושבו לבד) או הזן דמי משלוח ידנית.</div>'; }
     }
     if(guests>0){
-      var per=Math.round(serv/guests*10)/10;
-      if(serv<guests){ html+='<div class="chip warn">≈'+serv+' מנות מוערכות — ייתכן שלא יספיק ל-'+guests+' מוזמנים.</div>'; }
-      else { html+='<div class="chip ok">≈'+serv+' מנות מוערכות · ~'+per+' לכל אורח ('+guests+' מוזמנים)</div>'; }
-    } else { html+='<div class="chip ok">≈'+serv+' מנות מוערכות</div>'; }
+      if(serv<guests){ html+='<div class="chip warn">ייתכן שלא יספיק ל-'+guests+' אורחים — מומלץ להעלות תקציב או להוסיף פריט.</div>'; }
+      else if(serv<guests*1.1){ html+='<div class="chip ok">מספיק ל-'+guests+' אורחים.</div>'; }
+      else { html+='<div class="chip ok">מספיק ל-'+guests+' אורחים בנוחות.</div>'; }
+    } else { html+='<div class="chip ok">הזן מספר אורחים כדי לבדוק התאמה.</div>'; }
     html+=itemsEditableHtml();
     html+=addItemHtml();
     html+='<div style="margin-top:10px;">';
@@ -395,7 +407,8 @@ td.t{text-align:left;white-space:nowrap;font-weight:600;}
     $('q-body').innerHTML=quoteBodyHtml();
     $('q-food').textContent=fmt(food);
     $('q-grand').textContent=fmt(food+fee);
-    $('q-foot').textContent='ההצעה כוללת '+(guests>0?('כ-'+servTotal()+' מנות מוערכות עבור כ-'+guests+' מוזמנים. '):'')+'המחירים אומדן ראשוני וכפופים לאישור סופי. ההצעה בתוקף ל-14 יום.';
+    var enough=guests>0 && servTotal()>=guests;
+    $('q-foot').textContent=(guests>0?(enough?('ההצעה מספיקה ל-'+guests+' אורחים. '):('שימו לב: ייתכן שלא יספיק ל-'+guests+' אורחים. ')):'')+'המחירים אומדן ראשוני וכפופים לאישור סופי. ההצעה בתוקף ל-14 יום.';
     $('quote').style.display='block';
     $('quote').scrollIntoView({behavior:'smooth'});
   }
