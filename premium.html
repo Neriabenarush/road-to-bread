@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>מחולל הצעות מחיר — הדרך ללחם</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --ink:#3a2f23; --muted:#8a7b64; --line:#e8dcc4; --soft:#f3ead7;
+  --accent:#b9842f; --accent-d:#8a611c; --brown:#5a3e2b;
+  --cream:#fbf6ec; --page:#ece2cf;
+  --ok:#3f7a4f; --warnbg:#f6e7cf; --warnink:#8a5a16;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--page);color:var(--ink);font-family:'Heebo','Assistant',Arial,sans-serif;line-height:1.6;}
+.page{max-width:860px;margin:0 auto;padding:24px 16px 64px;}
+h1{font-family:'Frank Ruhl Libre',Georgia,serif;font-size:27px;font-weight:700;margin:0;color:var(--brown);letter-spacing:.3px;}
+.sub{color:var(--muted);font-size:14px;margin-top:4px;}
+.card{background:var(--cream);border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin-top:18px;box-shadow:0 2px 14px rgba(90,62,43,.06);}
+.card h2{font-family:'Frank Ruhl Libre',Georgia,serif;font-size:18px;font-weight:700;margin:0 0 14px;color:var(--brown);}
+label{font-size:13px;color:var(--muted);display:block;margin-bottom:6px;}
+input,select{font-family:inherit;font-size:15px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fffdf8;color:var(--ink);width:100%;}
+input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(185,132,47,.15);}
+.row{display:flex;gap:14px;flex-wrap:wrap;}
+.row>div{flex:1;min-width:130px;}
+.prefs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:14px;}
+.btn{font-family:inherit;font-size:15px;font-weight:500;padding:11px 20px;border-radius:11px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;letter-spacing:.3px;transition:background .15s;}
+.btn:hover{background:var(--accent-d);border-color:var(--accent-d);}
+.btn.sec{background:transparent;color:var(--accent-d);}
+.btn.sec:hover{background:var(--soft);}
+.minibtn{display:inline-flex;align-items:center;justify-content:center;width:27px;height:27px;border:1px solid var(--line);border-radius:8px;background:#fffdf8;cursor:pointer;font-size:16px;line-height:1;color:var(--brown);}
+.minibtn:hover{background:var(--soft);border-color:var(--accent);}
+.qcell{display:flex;align-items:center;gap:6px;white-space:nowrap;}
+.qcell span{min-width:22px;text-align:center;font-weight:600;}
+.chip{font-size:13px;padding:9px 13px;border-radius:10px;margin-bottom:14px;}
+.chip.ok{background:#e9f1e6;color:var(--ok);}
+.chip.warn{background:var(--warnbg);color:var(--warnink);}
+.chip.info{background:#f3e8d2;color:var(--brown);}
+.cat{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--accent);padding:7px 2px;margin-bottom:4px;font-weight:600;font-size:15px;color:var(--brown);}
+.cat span.s{font-size:13px;color:var(--muted);font-weight:400;}
+table{width:100%;border-collapse:collapse;font-size:14px;}
+td{padding:6px 2px;vertical-align:middle;}
+td.u{color:#ab9b80;white-space:nowrap;padding:6px 10px;}
+td.t{text-align:left;white-space:nowrap;font-weight:600;}
+.sumrow{display:flex;justify-content:space-between;font-size:15px;padding:5px 2px;color:var(--muted);}
+.sumtotal{display:flex;justify-content:space-between;border-top:2px solid var(--accent);margin-top:8px;padding-top:12px;font-family:'Frank Ruhl Libre',Georgia,serif;font-size:21px;font-weight:700;color:var(--brown);}
+.note{font-size:12px;color:#a8997f;margin-top:12px;line-height:1.6;}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;}
+
+.quote{background:var(--cream);border:1px solid var(--line);border-radius:16px;padding:30px 34px;margin-top:18px;display:none;box-shadow:0 3px 18px rgba(90,62,43,.08);}
+.qhead{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid var(--accent);padding-bottom:14px;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+.qbrand{font-family:'Frank Ruhl Libre',Georgia,serif;font-size:28px;font-weight:700;color:var(--brown);}
+.qbrand small{display:block;font-family:'Heebo',sans-serif;font-size:13px;color:var(--muted);font-weight:400;margin-top:3px;letter-spacing:.5px;}
+.qmeta{font-size:13px;color:var(--muted);text-align:left;}
+.qmeta b{color:var(--ink);}
+.qtitle{font-family:'Frank Ruhl Libre',Georgia,serif;font-size:19px;font-weight:700;margin:6px 0 12px;color:var(--brown);}
+.qfulfill{font-size:14px;background:var(--soft);border-radius:10px;padding:12px 14px;margin-bottom:14px;line-height:1.7;}
+.qfoot{font-size:12px;color:var(--muted);margin-top:20px;line-height:1.7;border-top:1px dashed var(--line);padding-top:14px;}
+
+@media print{
+  body{background:#fff;}
+  .no-print{display:none !important;}
+  .quote{display:block !important;border:none;border-radius:0;padding:0;margin:0;box-shadow:none;}
+  .page{padding:0;max-width:none;}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="no-print">
+    <img src="https://lalehem.co.il/wp-content/uploads/2024/04/logo.webp" alt="הדרך ללחם" style="height:46px;margin-bottom:6px;" />
+    <h1>מחולל הצעות מחיר</h1>
+    <div class="sub">הדרך ללחם · מגשי אירוח — מזינים תקציב, מקבלים הצעה מוכנה</div>
+
+    <div class="card">
+      <h2>פרטי ההצעה</h2>
+      <div class="row">
+        <div><label for="budget">תקציב למנות (₪)</label><input id="budget" type="number" min="0" step="50" value="6000" /></div>
+        <div><label for="guests">מספר מוזמנים</label><input id="guests" type="number" min="0" step="1" value="50" /></div>
+        <div><label for="client">שם הלקוח / החברה</label><input id="client" type="text" placeholder="לדוגמה: חברת אלפא" /></div>
+        <div><label for="eventdate">תאריך האירוע</label><input id="eventdate" type="date" /></div>
+      </div>
+      <div class="prefs">
+        <div><label for="w-trays">מגשים מלוחים</label><select id="w-trays"><option value="0">ללא</option><option value="1">מעט</option><option value="2">רגיל</option><option value="3" selected>הרבה</option></select></div>
+        <div><label for="w-pastas">פסטות וקישים</label><select id="w-pastas"><option value="0">ללא</option><option value="1">מעט</option><option value="2" selected>רגיל</option><option value="3">הרבה</option></select></div>
+        <div><label for="w-salads">סלטים</label><select id="w-salads"><option value="0">ללא</option><option value="1" selected>מעט</option><option value="2">רגיל</option><option value="3">הרבה</option></select></div>
+        <div><label for="w-sweets">קינוחים ומתוקים</label><select id="w-sweets"><option value="0">ללא</option><option value="1" selected>מעט</option><option value="2">רגיל</option><option value="3">הרבה</option></select></div>
+      </div>
+      <div class="note">שנה תקציב או העדפות וההצעה תתעדכן לבד. אפשר גם לכוונן כמויות ידנית בהצעה למטה.</div>
+    </div>
+
+    <div class="card">
+      <h2>אספקה</h2>
+      <div class="row">
+        <div><label for="fulfillment">אופן אספקה</label><select id="fulfillment"><option value="delivery" selected>משלוח</option><option value="pickup">איסוף עצמי</option></select></div>
+        <div><label for="branch" id="branchLabel">סניף שממנו יוצא</label><select id="branch"></select></div>
+      </div>
+      <div id="deliveryFields" style="margin-top:14px;">
+        <div class="row">
+          <div style="flex:2;"><label for="addr">כתובת מלאה למשלוח (רחוב, מספר, עיר)</label><input id="addr" type="text" placeholder="לדוגמה: שדרות יעקב 5, ראשון לציון" /></div>
+          <div style="flex:0 0 150px;"><label for="delivFee">דמי משלוח (₪)</label><input id="delivFee" type="number" min="0" step="5" placeholder="אוטומטי / ידני" /></div>
+        </div>
+        <div class="note" id="feeNote">הזן כתובת והדמים יחושבו לבד לפי מרחק (אפשר גם לעדכן ידנית).</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn" id="makeQuoteBtn">הפק הצעה ללקוח ↓</button>
+    </div>
+
+    <div class="card" id="resultCard">
+      <div id="result"></div>
+    </div>
+  </div>
+
+  <div class="quote" id="quote">
+    <div class="qhead">
+      <div class="qbrand"><img src="https://lalehem.co.il/wp-content/uploads/2024/04/logo.webp" alt="הדרך ללחם" style="height:58px;display:block;margin-bottom:6px;" /><small>מאפייה וקונדיטוריה · מגשי אירוח</small></div>
+      <div class="qmeta">
+        <div>הצעת מחיר</div>
+        <div>תאריך: <b id="q-today"></b></div>
+        <div id="q-clientline" style="display:none;">לכבוד: <b id="q-client"></b></div>
+        <div id="q-eventline" style="display:none;">לאירוע בתאריך: <b id="q-event"></b></div>
+        <div>טלפון להזמנות: <b id="q-phone"></b></div>
+      </div>
+    </div>
+    <div class="qtitle">הצעה לאירוח</div>
+    <div class="qfulfill" id="q-fulfill"></div>
+    <div id="q-body"></div>
+    <div style="margin-top:10px;">
+      <div class="sumrow"><span>סכום מנות</span><span id="q-food"></span></div>
+      <div class="sumrow" id="q-delivrow"><span>דמי משלוח</span><span id="q-deliv"></span></div>
+      <div class="sumtotal"><span>סה״כ לתשלום</span><span id="q-grand"></span></div>
+    </div>
+    <div class="qfoot" id="q-foot"></div>
+    <div class="actions no-print" style="margin-top:16px;">
+      <button class="btn" id="printBtn">הדפס / שמור כ-PDF</button>
+      <button class="btn sec" id="waBtn">שלח בוואטסאפ</button>
+      <button class="btn sec" id="closeBtn">חזרה לעריכה</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var CATALOG=[
+    {n:"כריכוני ביס",c:"trays",p:100},{n:"כריך בייגלה אפוי וחצוי",c:"trays",p:125},
+    {n:"טורטיות",c:"trays",p:100},{n:"טורטיות סלמון (סושי)",c:"trays",p:120},
+    {n:"מיני פוקצ'ות",c:"trays",p:80},{n:"מיני פיצה",c:"trays",p:80},
+    {n:"פלטת קרואסונים",c:"trays",p:60},{n:"פלטת בורקסים",c:"trays",p:60},
+    {n:"פלטת בורקסים חמאה",c:"trays",p:120},{n:"פלטת בורקסים ממולאים",c:"trays",p:120},
+    {n:"פחזניות ממולאות",c:"trays",p:200},{n:"פיתה סביח",c:"trays",p:100},
+    {n:"קרואסון סביח",c:"trays",p:100},{n:"ירקות חתוכים",c:"trays",p:70},
+    {n:"פלטת מיני שקשוקה",c:"trays",p:150},{n:"תפוח אדמה מוקרם",c:"trays",p:160},
+    {n:"שיפודי אנטיפסטי",c:"trays",p:80},{n:"מגש מיני פשטידה",c:"trays",p:130},
+    {n:"סלט חלומי",c:"salads",p:80},{n:"סלט חמוציות",c:"salads",p:80},
+    {n:"סלט בולגרית / יווני",c:"salads",p:80},{n:"סלט חסה בטטה",c:"salads",p:80},
+    {n:"סלט טונה",c:"salads",p:80},{n:"סלט ישראלי",c:"salads",p:80},
+    {n:"סלט פסטה",c:"salads",p:80},{n:"סלט שרי אגוזים",c:"salads",p:80},
+    {n:"סלט תפוח פקאן",c:"salads",p:80},
+    {n:"פסטה ברוטב עגבניות",c:"pastas",p:200},{n:"פסטה רוזה",c:"pastas",p:200},
+    {n:"פסטה שמנת פטריות",c:"pastas",p:200},{n:"פשטידת אנטיפסטי",c:"pastas",p:30},
+    {n:"פשטידת בטטה",c:"pastas",p:30},{n:"פשטידת בצל",c:"pastas",p:30},
+    {n:"פשטידת ברוקולי",c:"pastas",p:30},{n:"פשטידת גבינה וזיתים",c:"pastas",p:30},
+    {n:"פשטידת פטריות",c:"pastas",p:30},
+    {n:"קינוחי כוסות בטעמים",c:"sweets",p:200},{n:"פלטת מתוקים",c:"sweets",p:150},
+    {n:"פלטת פירות טריים חתוכים",c:"sweets",p:150}
+  ];
+  var CATKEYS=["trays","salads","pastas","sweets"];
+  var CATNAMES={trays:"מגשים מלוחים",salads:"סלטים",pastas:"פסטות וקישים",sweets:"קינוחים ומתוקים"};
+  var KBY={trays:5,salads:4,pastas:4,sweets:2};
+  var SV={trays:10,salads:6,pastas:9,sweets:10};
+  var CAP=20;
+  var PRICE={}; CATALOG.forEach(function(it){PRICE[it.n]=it.p;});
+  var CATOF={}; CATALOG.forEach(function(it){CATOF[it.n]=it.c;});
+
+  var BRANCHES=[
+    {n:"באר יעקב — יהלום 3", a:"יהלום 3, באר יעקב", t:"08-6179010", lat:31.9436, lng:34.8347},
+    {n:"ראשון לציון — ירושלים 123", a:"ירושלים 123, ראשון לציון", t:"03-5650000", lat:31.9710, lng:34.7980},
+    {n:"ראשון לציון — הרצל 158", a:"הרצל 158, ראשון לציון", t:"03-9562108", lat:31.9650, lng:34.8010},
+    {n:"יבנה — הדוגית 16", a:"הדוגית 16, יבנה", t:"053-9344721", lat:31.8780, lng:34.7397},
+    {n:"נאות שמיר, יבנה — הרצל 19", a:"הרצל 19, יבנה", t:"08-9587740", lat:31.8750, lng:34.7390}
+  ];
+  var DEFAULT_BRANCH=2;
+  var CITIES={
+    "ראשון לציון":[31.964,34.805],"תל אביב":[32.085,34.782],"חולון":[32.017,34.779],"בת ים":[32.023,34.750],
+    "רמת גן":[32.070,34.824],"גבעתיים":[32.072,34.809],"בני ברק":[32.081,34.834],"פתח תקווה":[32.084,34.888],
+    "קריית אונו":[32.056,34.855],"אור יהודה":[32.031,34.852],"יהוד":[32.033,34.892],"אזור":[32.026,34.805],
+    "גבעת שמואל":[32.078,34.848],"רמת השרון":[32.146,34.840],"הרצליה":[32.162,34.844],"רעננה":[32.185,34.871],
+    "כפר סבא":[32.178,34.908],"הוד השרון":[32.150,34.889],"ראש העין":[32.096,34.957],"אלעד":[32.051,34.951],
+    "נס ציונה":[31.929,34.799],"רחובות":[31.894,34.811],"באר יעקב":[31.944,34.835],"יבנה":[31.878,34.740],
+    "גן יבנה":[31.787,34.705],"רמלה":[31.929,34.866],"לוד":[31.951,34.895],"מודיעין":[31.898,35.010],
+    "שוהם":[31.999,34.948],"גדרה":[31.814,34.779],"מזכרת בתיה":[31.852,34.839],"קרית עקרון":[31.870,34.820],
+    "נתניה":[32.321,34.853],"אבן יהודה":[32.270,34.888],"חדרה":[32.434,34.920],"פרדס חנה-כרכור":[32.474,34.973],
+    "זכרון יעקב":[32.571,34.952],"קיסריה":[32.500,34.897],"ירושלים":[31.768,35.214],"מבשרת ציון":[31.797,35.151],
+    "בית שמש":[31.749,34.989],"מעלה אדומים":[31.773,35.300],"אשדוד":[31.801,34.644],"אשקלון":[31.669,34.572],
+    "קרית גת":[31.610,34.771],"קרית מלאכי":[31.730,34.745],"באר שבע":[31.252,34.792],"אופקים":[31.317,34.620],
+    "נתיבות":[31.422,34.589],"שדרות":[31.524,34.596],"דימונה":[31.063,35.027],"אילת":[29.557,34.952],
+    "חיפה":[32.794,34.989],"קרית ביאליק":[32.831,35.087],"קרית מוצקין":[32.836,35.080],"קרית אתא":[32.811,35.107],
+    "עכו":[32.928,35.082],"נהריה":[33.009,35.095],"כרמיאל":[32.916,35.292],"נצרת":[32.702,35.298],
+    "עפולה":[32.607,35.289],"טבריה":[32.789,35.531],"צפת":[32.965,35.498],"קרית שמונה":[33.207,35.570],
+    "בית שאן":[32.497,35.499],"מגדל העמק":[32.675,35.243],"יקנעם":[32.655,35.110]
+  };
+  var ROAD=1.3;
+  function tier(km){ var pts=[[0,30],[4,50],[17.5,150],[58,300]], fee; if(km<=pts[0][0]){fee=pts[0][1];} else { fee=null; for(var i=1;i<pts.length;i++){ if(km<=pts[i][0]){ var a=pts[i-1],b=pts[i]; fee=a[1]+(b[1]-a[1])*(km-a[0])/(b[0]-a[0]); break; } } if(fee===null){ var L=pts[pts.length-1],P=pts[pts.length-2],sl=(L[1]-P[1])/(L[0]-P[0]); fee=L[1]+sl*(km-L[0]); } } fee=Math.min(600,Math.max(30,fee)); return Math.round(fee/10)*10; }
+
+  var nf=new Intl.NumberFormat('he-IL');
+  function fmt(n){return '₪'+nf.format(Math.round(n));}
+  function $(id){return document.getElementById(id);}
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function hav(aLat,aLng,bLat,bLng){
+    var R=6371, tr=Math.PI/180;
+    var dLat=(bLat-aLat)*tr, dLng=(bLng-aLng)*tr;
+    var s=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(aLat*tr)*Math.cos(bLat*tr)*Math.sin(dLng/2)*Math.sin(dLng/2);
+    return R*2*Math.atan2(Math.sqrt(s),Math.sqrt(1-s));
+  }
+
+  var work={qty:{}};
+  function chooseItems(items,K){ if(items.length<=K) return items.slice(); var step=items.length/K,out=[]; for(var i=0;i<K;i++) out.push(items[Math.floor(i*step)]); return out; }
+  function readWeights(){ var w={}; CATKEYS.forEach(function(k){w[k]=parseInt($('w-'+k).value,10)||0;}); return w; }
+  function generate(budget,weights){
+    var qty={}; CATALOG.forEach(function(it){qty[it.n]=0;});
+    var total=0;
+    var sumW=CATKEYS.reduce(function(s,k){return s+(weights[k]||0);},0)||1;
+    var chosenAll=[];
+    CATKEYS.forEach(function(key){
+      var w=weights[key]||0; if(w<=0) return;
+      var items=CATALOG.filter(function(it){return it.c===key;});
+      var chosen=chooseItems(items,KBY[key]);
+      chosen.forEach(function(it){chosenAll.push(it);});
+      var catBudget=budget*w/sumW, catSpent=0, prog=true;
+      while(prog){ prog=false;
+        for(var i=0;i<chosen.length;i++){ var it=chosen[i];
+          if(qty[it.n]>=CAP) continue;
+          if(catSpent+it.p>catBudget+1e-6) continue;
+          if(total+it.p>budget) continue;
+          qty[it.n]++; total+=it.p; catSpent+=it.p; prog=true;
+        }
+      }
+    });
+    var prog2=true;
+    while(prog2){ prog2=false;
+      var sorted=chosenAll.slice().sort(function(a,b){return a.p-b.p;});
+      for(var j=0;j<sorted.length;j++){ var it2=sorted[j];
+        if(qty[it2.n]>=CAP) continue;
+        if(total+it2.p>budget) continue;
+        qty[it2.n]++; total+=it2.p; prog2=true; break;
+      }
+    }
+    return qty;
+  }
+
+  function foodTotal(){ var t=0; CATALOG.forEach(function(it){ t+=it.p*(work.qty[it.n]||0); }); return t; }
+  function servTotal(){ var s=0; CATALOG.forEach(function(it){ s+=SV[it.c]*(work.qty[it.n]||0); }); return s; }
+  function curBranch(){ return BRANCHES[parseInt($('branch').value,10)||0]; }
+  function getDeliveryFee(){ if($('fulfillment').value!=='delivery') return 0; return Math.max(0, parseFloat($('delivFee').value)||0); }
+
+  function todayStr(){ var d=new Date(); return d.toLocaleDateString('he-IL'); }
+  function isoToday(){ var d=new Date(), m=d.getMonth()+1, dd=d.getDate(); return d.getFullYear()+'-'+(m<10?'0'+m:m)+'-'+(dd<10?'0'+dd:dd); }
+
+  function cityFallback(addr){ var keys=Object.keys(CITIES); for(var i=0;i<keys.length;i++){ if(addr.indexOf(keys[i])>=0){ return {lat:CITIES[keys[i]][0],lng:CITIES[keys[i]][1]}; } } return null; }
+  function geocode(q){
+    var url='https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=il&accept-language=he&q='+encodeURIComponent(q);
+    var ctrl=new AbortController(); var to=setTimeout(function(){ctrl.abort();},7000);
+    return fetch(url,{signal:ctrl.signal,headers:{'Accept':'application/json'}})
+      .then(function(r){return r.json();})
+      .then(function(j){ clearTimeout(to); if(j&&j.length){return {lat:parseFloat(j[0].lat),lng:parseFloat(j[0].lon)};} return null; })
+      .catch(function(){ clearTimeout(to); return null; });
+  }
+  var geoTimer;
+  function scheduleGeocode(){ clearTimeout(geoTimer); geoTimer=setTimeout(computeFee,800); }
+  function computeFee(){
+    if($('fulfillment').value!=='delivery') return;
+    var addr=$('addr').value.trim();
+    if(!addr){ $('feeNote').textContent='הזן כתובת והדמים יחושבו לבד לפי מרחק (אפשר גם לעדכן ידנית).'; return; }
+    var br=curBranch();
+    $('feeNote').textContent='מחשב דמי משלוח…';
+    geocode(addr).then(function(loc){
+      if(!loc) loc=cityFallback(addr);
+      if(!loc){ $('feeNote').textContent='לא זוהתה הכתובת — הזן דמי משלוח ידנית.'; return; }
+      var road=hav(br.lat,br.lng,loc.lat,loc.lng)*ROAD;
+      $('delivFee').value=tier(road);
+      $('feeNote').textContent='מרחק כ-'+Math.round(road)+' ק״מ מהסניף · ניתן לעדכן ידנית';
+      renderResult();
+    });
+  }
+
+  function itemsEditableHtml(){
+    var html='';
+    CATKEYS.forEach(function(k){
+      var items=CATALOG.filter(function(it){return it.c===k && (work.qty[it.n]||0)>0;});
+      if(!items.length) return;
+      var sub=items.reduce(function(s,it){return s+it.p*work.qty[it.n];},0);
+      html+='<div style="margin-bottom:14px;">';
+      html+='<div class="cat">'+CATNAMES[k]+'<span class="s">'+fmt(sub)+'</span></div><table>';
+      items.forEach(function(it){
+        var q=work.qty[it.n];
+        html+='<tr><td>'+esc(it.n)+'</td>'+
+          '<td><div class="qcell"><button class="minibtn" data-act="dec" data-item="'+esc(it.n)+'">−</button><span>'+q+'</span><button class="minibtn" data-act="inc" data-item="'+esc(it.n)+'">+</button></div></td>'+
+          '<td class="u">'+fmt(it.p)+'</td>'+
+          '<td class="t">'+fmt(it.p*q)+'</td>'+
+          '<td style="text-align:left;"><button class="minibtn" data-act="rm" data-item="'+esc(it.n)+'" title="הסר">×</button></td></tr>';
+      });
+      html+='</table></div>';
+    });
+    return html;
+  }
+  function addItemHtml(){
+    var opts='<option value="">+ הוסף פריט…</option>';
+    CATKEYS.forEach(function(k){
+      opts+='<optgroup label="'+CATNAMES[k]+'">';
+      CATALOG.filter(function(it){return it.c===k;}).forEach(function(it){ opts+='<option value="'+esc(it.n)+'">'+esc(it.n)+' (₪'+it.p+')</option>'; });
+      opts+='</optgroup>';
+    });
+    return '<div style="margin:6px 0 4px;max-width:320px;"><select id="addItemSel">'+opts+'</select></div>';
+  }
+
+  function renderResult(){
+    var guests=Math.max(0,parseInt($('guests').value,10)||0);
+    var el=$('result');
+    var food=foodTotal();
+    if(food<=0 && Math.max(0,parseInt($('budget').value,10)||0)<=0){ el.innerHTML='<div style="color:var(--muted);font-size:14px;">הזן תקציב כדי לקבל הצעה.</div>'; return; }
+    var mode=$('fulfillment').value, br=curBranch(), fee=getDeliveryFee();
+    var serv=servTotal(), grand=food+fee;
+    var html='';
+    if(mode==='pickup'){ html+='<div class="chip info">איסוף עצמי מסניף '+br.n+' · '+br.a+' · טל׳ '+br.t+'</div>'; }
+    else {
+      var addr=$('addr').value.trim();
+      if(fee>0){ html+='<div class="chip info">משלוח'+(addr?(' אל '+esc(addr)):'')+' · דמי משלוח '+fmt(fee)+' · מסניף '+br.n+'</div>'; }
+      else { html+='<div class="chip warn">משלוח: הזן כתובת (הדמים יחושבו לבד) או הזן דמי משלוח ידנית.</div>'; }
+    }
+    if(guests>0){
+      var per=Math.round(serv/guests*10)/10;
+      if(serv<guests){ html+='<div class="chip warn">≈'+serv+' מנות מוערכות — ייתכן שלא יספיק ל-'+guests+' מוזמנים.</div>'; }
+      else { html+='<div class="chip ok">≈'+serv+' מנות מוערכות · ~'+per+' לכל אורח ('+guests+' מוזמנים)</div>'; }
+    } else { html+='<div class="chip ok">≈'+serv+' מנות מוערכות</div>'; }
+    html+=itemsEditableHtml();
+    html+=addItemHtml();
+    html+='<div style="margin-top:10px;">';
+    html+='<div class="sumrow"><span>סכום מנות</span><span>'+fmt(food)+'</span></div>';
+    html+='<div class="sumrow"><span>דמי משלוח</span><span>'+(mode==='pickup'?'איסוף עצמי':fmt(fee))+'</span></div>';
+    html+='<div class="sumtotal"><span>סה״כ לתשלום</span><span>'+fmt(grand)+'</span></div>';
+    html+='</div>';
+    html+='<div class="note">כוונן כמויות עם +/− או הסר פריט; אפשר להוסיף פריט מהרשימה. הסכומים מתעדכנים לבד.</div>';
+    el.innerHTML=html;
+  }
+
+  function regenerate(){
+    var budget=Math.max(0,parseInt($('budget').value,10)||0);
+    work.qty = budget>0 ? generate(budget,readWeights()) : {};
+    renderResult();
+  }
+
+  function quoteBodyHtml(){
+    var html='';
+    CATKEYS.forEach(function(k){
+      var items=CATALOG.filter(function(it){return it.c===k && (work.qty[it.n]||0)>0;});
+      if(!items.length) return;
+      var sub=items.reduce(function(s,it){return s+it.p*work.qty[it.n];},0);
+      html+='<div style="margin-bottom:14px;"><div class="cat">'+CATNAMES[k]+'<span class="s">'+fmt(sub)+'</span></div><table>';
+      items.forEach(function(it){ html+='<tr><td>'+esc(it.n)+'</td><td class="u">×'+work.qty[it.n]+'</td><td class="u">'+fmt(it.p)+'</td><td class="t">'+fmt(it.p*work.qty[it.n])+'</td></tr>'; });
+      html+='</table></div>';
+    });
+    return html;
+  }
+
+  function makeQuote(){
+    var food=foodTotal();
+    if(food<=0){ alert('אין פריטים בהצעה. הזן תקציב או הוסף פריטים.'); return; }
+    var guests=Math.max(0,parseInt($('guests').value,10)||0);
+    var mode=$('fulfillment').value, br=curBranch(), fee=getDeliveryFee();
+    $('q-today').textContent=todayStr();
+    $('q-phone').textContent=br.t;
+    var client=$('client').value.trim();
+    if(client){ $('q-client').textContent=client; $('q-clientline').style.display='block'; } else { $('q-clientline').style.display='none'; }
+    var ev=$('eventdate').value;
+    if(ev){
+      if(ev<isoToday()){ alert('תאריך האירוע צריך להיות היום או בעתיד.'); return; }
+      var dt=new Date(ev); $('q-event').textContent=dt.toLocaleDateString('he-IL'); $('q-eventline').style.display='block';
+    } else { $('q-eventline').style.display='none'; }
+    if(mode==='pickup'){
+      $('q-fulfill').innerHTML='<b>איסוף עצמי</b> מסניף '+br.n+'<br>'+br.a+' · טל׳ '+br.t;
+      $('q-delivrow').style.display='none';
+    } else {
+      var addr=$('addr').value.trim();
+      $('q-fulfill').innerHTML='<b>משלוח</b> אל: '+(esc(addr)||'(כתובת תושלם)')+'<br>יוצא מסניף '+br.n;
+      $('q-delivrow').style.display='flex';
+      $('q-deliv').textContent=fee>0?fmt(fee):'לתיאום';
+    }
+    $('q-body').innerHTML=quoteBodyHtml();
+    $('q-food').textContent=fmt(food);
+    $('q-grand').textContent=fmt(food+fee);
+    $('q-foot').textContent='ההצעה כוללת '+(guests>0?('כ-'+servTotal()+' מנות מוערכות עבור כ-'+guests+' מוזמנים. '):'')+'המחירים אומדן ראשוני וכפופים לאישור סופי. ההצעה בתוקף ל-14 יום.';
+    $('quote').style.display='block';
+    $('quote').scrollIntoView({behavior:'smooth'});
+  }
+
+  function waText(){
+    var guests=Math.max(0,parseInt($('guests').value,10)||0);
+    var mode=$('fulfillment').value, br=curBranch(), fee=getDeliveryFee(), food=foodTotal();
+    var lines=['*הצעת מחיר — הדרך ללחם*'];
+    var client=$('client').value.trim(); if(client) lines.push('לכבוד: '+client);
+    lines.push('תאריך: '+todayStr(),'');
+    CATKEYS.forEach(function(k){
+      var items=CATALOG.filter(function(it){return it.c===k && (work.qty[it.n]||0)>0;});
+      if(!items.length) return;
+      lines.push('*'+CATNAMES[k]+'*');
+      items.forEach(function(it){ lines.push('• '+it.n+' ×'+work.qty[it.n]+' — '+fmt(it.p*work.qty[it.n])); });
+      lines.push('');
+    });
+    lines.push('סכום מנות: '+fmt(food));
+    if(mode==='pickup'){ lines.push('אספקה: איסוף עצמי מסניף '+br.n); }
+    else { var addr=$('addr').value.trim(); lines.push('אספקה: משלוח אל '+(addr||'(כתובת תושלם)')); lines.push('דמי משלוח: '+(fee>0?fmt(fee):'לתיאום')); }
+    lines.push('סה״כ לתשלום: '+fmt(food+fee));
+    if(guests>0) lines.push('(≈'+servTotal()+' מנות עבור כ-'+guests+' מוזמנים)');
+    lines.push('','טלפון להזמנות: '+br.t);
+    return lines.join('\n');
+  }
+
+  function syncDeliveryFields(){
+    var del=$('fulfillment').value==='delivery';
+    $('deliveryFields').style.display = del ? 'block' : 'none';
+    $('branchLabel').textContent = del ? 'סניף שממנו יוצא' : 'סניף לאיסוף';
+    renderResult();
+  }
+
+  var branchSel=$('branch');
+  BRANCHES.forEach(function(b,i){ var o=document.createElement('option'); o.value=i; o.textContent=b.n; branchSel.appendChild(o); });
+  branchSel.value=DEFAULT_BRANCH;
+
+  ['budget','w-trays','w-pastas','w-salads','w-sweets'].forEach(function(id){
+    $(id).addEventListener('input',regenerate); $(id).addEventListener('change',regenerate);
+  });
+  $('guests').addEventListener('input',renderResult);
+  $('delivFee').addEventListener('input',renderResult);
+  $('addr').addEventListener('input',function(){ renderResult(); scheduleGeocode(); });
+  $('branch').addEventListener('change',function(){ renderResult(); if($('fulfillment').value==='delivery' && $('addr').value.trim()) computeFee(); });
+  $('fulfillment').addEventListener('change',syncDeliveryFields);
+  $('makeQuoteBtn').addEventListener('click',makeQuote);
+  $('printBtn').addEventListener('click',function(){ window.print(); });
+  $('waBtn').addEventListener('click',function(){ window.open('https://wa.me/?text='+encodeURIComponent(waText()),'_blank'); });
+  $('closeBtn').addEventListener('click',function(){ $('quote').style.display='none'; $('resultCard').scrollIntoView({behavior:'smooth'}); });
+
+  $('resultCard').addEventListener('click',function(e){
+    var b=e.target.closest && e.target.closest('[data-act]'); if(!b) return;
+    var act=b.getAttribute('data-act'), item=b.getAttribute('data-item');
+    if(act==='inc'){ work.qty[item]=Math.min(CAP,(work.qty[item]||0)+1); }
+    else if(act==='dec'){ work.qty[item]=Math.max(0,(work.qty[item]||0)-1); }
+    else if(act==='rm'){ work.qty[item]=0; }
+    renderResult();
+  });
+  $('resultCard').addEventListener('change',function(e){
+    if(e.target && e.target.id==='addItemSel'){ var v=e.target.value; if(v){ work.qty[v]=Math.min(CAP,(work.qty[v]||0)+1); renderResult(); } }
+  });
+
+  $('eventdate').min = isoToday();
+  syncDeliveryFields();
+  regenerate();
+})();
+</script>
+</body>
+</html>
