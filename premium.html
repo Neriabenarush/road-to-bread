@@ -105,7 +105,7 @@ td.t{text-align:left;white-space:nowrap;font-weight:600;}
       <h2>אספקה</h2>
       <div class="row">
         <div><label for="fulfillment">אופן אספקה</label><select id="fulfillment"><option value="delivery" selected>משלוח</option><option value="pickup">איסוף עצמי</option></select></div>
-        <div><label for="branch" id="branchLabel">סניף שממנו יוצא</label><select id="branch"></select></div>
+        <div><label>סניף</label><div style="font-size:15px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--soft);color:var(--ink);">ראשון לציון — הרצל 158</div></div>
       </div>
       <div id="deliveryFields" style="margin-top:14px;">
         <div class="row">
@@ -189,13 +189,9 @@ td.t{text-align:left;white-space:nowrap;font-weight:600;}
   var CATOF={}; CATALOG.forEach(function(it){CATOF[it.n]=it.c;});
 
   var BRANCHES=[
-    {n:"באר יעקב — יהלום 3", a:"יהלום 3, באר יעקב", t:"08-6179010", lat:31.9436, lng:34.8347},
-    {n:"ראשון לציון — ירושלים 123", a:"ירושלים 123, ראשון לציון", t:"03-5650000", lat:31.9710, lng:34.7980},
-    {n:"ראשון לציון — הרצל 158", a:"הרצל 158, ראשון לציון", t:"03-9562108", lat:31.9650, lng:34.8010},
-    {n:"יבנה — הדוגית 16", a:"הדוגית 16, יבנה", t:"053-9344721", lat:31.8780, lng:34.7397},
-    {n:"נאות שמיר, יבנה — הרצל 19", a:"הרצל 19, יבנה", t:"08-9587740", lat:31.8750, lng:34.7390}
+    {n:"ראשון לציון — הרצל 158", a:"הרצל 158, ראשון לציון", t:"03-9562108", lat:31.9650, lng:34.8010}
   ];
-  var DEFAULT_BRANCH=2;
+  var DEFAULT_BRANCH=0;
   var CITIES={
     "ראשון לציון":[31.964,34.805],"תל אביב":[32.085,34.782],"חולון":[32.017,34.779],"בת ים":[32.023,34.750],
     "רמת גן":[32.070,34.824],"גבעתיים":[32.072,34.809],"בני ברק":[32.081,34.834],"פתח תקווה":[32.084,34.888],
@@ -266,7 +262,7 @@ td.t{text-align:left;white-space:nowrap;font-weight:600;}
 
   function foodTotal(){ var t=0; CATALOG.forEach(function(it){ t+=it.p*(work.qty[it.n]||0); }); return t; }
   function servTotal(){ var s=0; CATALOG.forEach(function(it){ s+=SV[it.c]*(work.qty[it.n]||0); }); return s; }
-  function curBranch(){ return BRANCHES[parseInt($('branch').value,10)||0]; }
+  function curBranch(){ return BRANCHES[0]; }
   function getDeliveryFee(){ if($('fulfillment').value!=='delivery') return 0; return Math.max(0, parseFloat($('delivFee').value)||0); }
 
   function todayStr(){ var d=new Date(); return d.toLocaleDateString('he-IL'); }
@@ -438,13 +434,8 @@ td.t{text-align:left;white-space:nowrap;font-weight:600;}
   function syncDeliveryFields(){
     var del=$('fulfillment').value==='delivery';
     $('deliveryFields').style.display = del ? 'block' : 'none';
-    $('branchLabel').textContent = del ? 'סניף שממנו יוצא' : 'סניף לאיסוף';
     renderResult();
   }
-
-  var branchSel=$('branch');
-  BRANCHES.forEach(function(b,i){ var o=document.createElement('option'); o.value=i; o.textContent=b.n; branchSel.appendChild(o); });
-  branchSel.value=DEFAULT_BRANCH;
 
   ['budget','w-trays','w-pastas','w-salads','w-sweets'].forEach(function(id){
     $(id).addEventListener('input',regenerate); $(id).addEventListener('change',regenerate);
@@ -452,7 +443,6 @@ td.t{text-align:left;white-space:nowrap;font-weight:600;}
   $('guests').addEventListener('input',renderResult);
   $('delivFee').addEventListener('input',renderResult);
   $('addr').addEventListener('input',function(){ renderResult(); scheduleGeocode(); });
-  $('branch').addEventListener('change',function(){ renderResult(); if($('fulfillment').value==='delivery' && $('addr').value.trim()) computeFee(); });
   $('fulfillment').addEventListener('change',syncDeliveryFields);
   $('makeQuoteBtn').addEventListener('click',makeQuote);
   $('printBtn').addEventListener('click',function(){ window.print(); });
