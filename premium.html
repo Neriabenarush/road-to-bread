@@ -148,7 +148,6 @@ td.t{text-align:left;white-space:nowrap;font-weight:600;}
     <div class="qfoot" id="q-foot"></div>
     <div class="actions no-print" style="margin-top:16px;">
       <button class="btn" id="printBtn">הדפס / שמור כ-PDF</button>
-      <button class="btn sec" id="waBtn">שלח בוואטסאפ</button>
       <button class="btn sec" id="closeBtn">חזרה לעריכה</button>
     </div>
   </div>
@@ -409,28 +408,6 @@ td.t{text-align:left;white-space:nowrap;font-weight:600;}
     $('quote').scrollIntoView({behavior:'smooth'});
   }
 
-  function waText(){
-    var guests=Math.max(0,parseInt($('guests').value,10)||0);
-    var mode=$('fulfillment').value, br=curBranch(), fee=getDeliveryFee(), food=foodTotal();
-    var lines=['*הצעת מחיר — הדרך ללחם*'];
-    var client=$('client').value.trim(); if(client) lines.push('לכבוד: '+client);
-    lines.push('תאריך: '+todayStr(),'');
-    CATKEYS.forEach(function(k){
-      var items=CATALOG.filter(function(it){return it.c===k && (work.qty[it.n]||0)>0;});
-      if(!items.length) return;
-      lines.push('*'+CATNAMES[k]+'*');
-      items.forEach(function(it){ lines.push('• '+it.n+' ×'+work.qty[it.n]+' — '+fmt(it.p*work.qty[it.n])); });
-      lines.push('');
-    });
-    lines.push('סכום מנות: '+fmt(food));
-    if(mode==='pickup'){ lines.push('אספקה: איסוף עצמי מסניף '+br.n); }
-    else { var addr=$('addr').value.trim(); lines.push('אספקה: משלוח אל '+(addr||'(כתובת תושלם)')); lines.push('דמי משלוח: '+(fee>0?fmt(fee):'לתיאום')); }
-    lines.push('סה״כ לתשלום: '+fmt(food+fee));
-    if(guests>0) lines.push('(≈'+servTotal()+' מנות עבור כ-'+guests+' מוזמנים)');
-    lines.push('','טלפון להזמנות: '+br.t);
-    return lines.join('\n');
-  }
-
   function syncDeliveryFields(){
     var del=$('fulfillment').value==='delivery';
     $('deliveryFields').style.display = del ? 'block' : 'none';
@@ -446,7 +423,6 @@ td.t{text-align:left;white-space:nowrap;font-weight:600;}
   $('fulfillment').addEventListener('change',syncDeliveryFields);
   $('makeQuoteBtn').addEventListener('click',makeQuote);
   $('printBtn').addEventListener('click',function(){ window.print(); });
-  $('waBtn').addEventListener('click',function(){ window.open('https://wa.me/?text='+encodeURIComponent(waText()),'_blank'); });
   $('closeBtn').addEventListener('click',function(){ $('quote').style.display='none'; $('resultCard').scrollIntoView({behavior:'smooth'}); });
 
   $('resultCard').addEventListener('click',function(e){
