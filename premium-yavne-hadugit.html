@@ -268,8 +268,9 @@ td.t{text-align:left;white-space:nowrap;font-weight:600;}
   function isoToday(){ var d=new Date(), m=d.getMonth()+1, dd=d.getDate(); return d.getFullYear()+'-'+(m<10?'0'+m:m)+'-'+(dd<10?'0'+dd:dd); }
 
   function cityFallback(addr){ var keys=Object.keys(CITIES); for(var i=0;i<keys.length;i++){ if(addr.indexOf(keys[i])>=0){ return {lat:CITIES[keys[i]][0],lng:CITIES[keys[i]][1]}; } } return null; }
-  function geocode(q){
+  function geocode(q,c){
     var url='https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=il&accept-language=he&q='+encodeURIComponent(q);
+    if(c){ url+='&viewbox='+(c.lng-0.35)+','+(c.lat-0.45)+','+(c.lng+0.35)+','+(c.lat+0.45)+'&bounded=1'; }
     var ctrl=new AbortController(); var to=setTimeout(function(){ctrl.abort();},7000);
     return fetch(url,{signal:ctrl.signal,headers:{'Accept':'application/json'}})
       .then(function(r){return r.json();})
@@ -294,7 +295,7 @@ td.t{text-align:left;white-space:nowrap;font-weight:600;}
     if(!addr){ clearGeo(); return; }
     var br=curBranch();
     setGeo('load','<span class="spin"></span><span>מזהה כתובת…</span>');
-    geocode(addr).then(function(loc){
+    geocode(addr,br).then(function(loc){
       var byCity=false;
       if(!loc){ loc=cityFallback(addr); byCity=!!loc; }
       if(!loc){ setGeo('warn','<span class="ic">⚠</span><span>לא זוהתה הכתובת — אפשר להזין דמי משלוח ידנית</span>'); return; }
@@ -303,7 +304,7 @@ td.t{text-align:left;white-space:nowrap;font-weight:600;}
         var exact=(km!=null), road=exact?km:hav(br.lat,br.lng,loc.lat,loc.lng)*ROAD, fee=tier(road);
         $('delivFee').value=fee;
         var src=byCity?'זוהה לפי עיר':(exact?'מרחק נסיעה':'כתובת זוהתה');
-        setGeo('ok','<span class="ic">✓</span><span>'+src+' · כ-'+Math.round(road)+' ק״מ · דמי משלוח '+fmt(fee)+'</span>');
+        setGeo('ok','<span class="ic">✓</span><span>'+src+' · כ-'+road.toFixed(1)+' ק״מ · דמי משלוח '+fmt(fee)+'</span>');
         renderResult();
       });
     });
