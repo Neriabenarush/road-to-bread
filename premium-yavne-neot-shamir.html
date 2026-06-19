@@ -110,9 +110,9 @@ td.t{text-align:left;white-space:nowrap;font-weight:600;}
       <div id="deliveryFields" style="margin-top:14px;">
         <div class="row">
           <div style="flex:2;"><label for="addr">כתובת מלאה למשלוח (רחוב, מספר, עיר)</label><input id="addr" type="text" placeholder="לדוגמה: דואני 5, יבנה" /></div>
-          <div style="flex:0 0 150px;"><label for="delivFee">דמי משלוח (₪)</label><input id="delivFee" type="number" min="0" step="5" placeholder="אוטומטי / ידני" /></div>
+          <div style="flex:0 0 150px;"><label for="delivFee">דמי משלוח (₪)</label><input id="delivFee" type="number" min="0" step="5" placeholder="סכום" /></div>
         </div>
-        <div class="note" id="feeNote">הזן כתובת והדמים יחושבו לבד לפי מרחק (אפשר גם לעדכן ידנית).</div>
+        <div class="note" id="feeNote">דמי המשלוח מוזנים ידנית — כל יעד שונה (מרחק, גישה, סוג האירוע).</div>
         <div class="geo" id="geoStatus" aria-live="polite"></div>
       </div>
     </div>
@@ -432,7 +432,7 @@ td.t{text-align:left;white-space:nowrap;font-weight:600;}
   });
   $('guests').addEventListener('input',renderResult);
   $('delivFee').addEventListener('input',renderResult);
-  $('addr').addEventListener('input',function(){ renderResult(); scheduleGeocode(); });
+  $('addr').addEventListener('input',renderResult);
   $('fulfillment').addEventListener('change',syncDeliveryFields);
   $('makeQuoteBtn').addEventListener('click',makeQuote);
   $('printBtn').addEventListener('click',function(){ window.print(); });
