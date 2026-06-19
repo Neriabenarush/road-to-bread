@@ -276,6 +276,14 @@ td.t{text-align:left;white-space:nowrap;font-weight:600;}
       .then(function(j){ clearTimeout(to); if(j&&j.length){return {lat:parseFloat(j[0].lat),lng:parseFloat(j[0].lon)};} return null; })
       .catch(function(){ clearTimeout(to); return null; });
   }
+  function osrmRoute(aLat,aLng,bLat,bLng){
+    var url='https://router.project-osrm.org/route/v1/driving/'+aLng+','+aLat+';'+bLng+','+bLat+'?overview=false&alternatives=false&steps=false';
+    var ctrl=new AbortController(); var to=setTimeout(function(){ctrl.abort();},8000);
+    return fetch(url,{signal:ctrl.signal})
+      .then(function(r){return r.json();})
+      .then(function(j){ clearTimeout(to); if(j&&j.code==='Ok'&&j.routes&&j.routes.length){return j.routes[0].distance/1000;} return null; })
+      .catch(function(){ clearTimeout(to); return null; });
+  }
   var geoTimer;
   function scheduleGeocode(){ clearTimeout(geoTimer); geoTimer=setTimeout(computeFee,800); }
   function setGeo(state,html){ var g=$('geoStatus'); if(!g) return; g.className='geo show '+state; g.innerHTML=html; }
@@ -290,10 +298,14 @@ td.t{text-align:left;white-space:nowrap;font-weight:600;}
       var byCity=false;
       if(!loc){ loc=cityFallback(addr); byCity=!!loc; }
       if(!loc){ setGeo('warn','<span class="ic">⚠</span><span>לא זוהתה הכתובת — אפשר להזין דמי משלוח ידנית</span>'); return; }
-      var road=hav(br.lat,br.lng,loc.lat,loc.lng)*ROAD, fee=tier(road);
-      $('delivFee').value=fee;
-      setGeo('ok','<span class="ic">✓</span><span>'+(byCity?'זוהה לפי עיר':'כתובת זוהתה')+' · כ-'+Math.round(road)+' ק״מ · דמי משלוח '+fmt(fee)+'</span>');
-      renderResult();
+      setGeo('load','<span class="spin"></span><span>מחשב מסלול נסיעה…</span>');
+      osrmRoute(br.lat,br.lng,loc.lat,loc.lng).then(function(km){
+        var exact=(km!=null), road=exact?km:hav(br.lat,br.lng,loc.lat,loc.lng)*ROAD, fee=tier(road);
+        $('delivFee').value=fee;
+        var src=byCity?'זוהה לפי עיר':(exact?'מרחק נסיעה':'כתובת זוהתה');
+        setGeo('ok','<span class="ic">✓</span><span>'+src+' · כ-'+Math.round(road)+' ק״מ · דמי משלוח '+fmt(fee)+'</span>');
+        renderResult();
+      });
     });
   }
 
