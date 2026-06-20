@@ -45,6 +45,7 @@ table{width:100%;border-collapse:collapse;font-size:14px;}
 td{padding:6px 2px;vertical-align:middle;}
 td.u{color:#ab9b80;white-space:nowrap;padding:6px 10px;}
 td.t{text-align:left;white-space:nowrap;font-weight:600;}
+tr.qbh td{color:var(--muted);font-weight:700;font-size:11px;border-bottom:1px solid var(--line);padding-bottom:3px;}
 .sumrow{display:flex;justify-content:space-between;font-size:15px;padding:5px 2px;color:var(--muted);}
 .sumtotal{display:flex;justify-content:space-between;border-top:2px solid var(--accent);margin-top:8px;padding-top:12px;font-family:'Frank Ruhl Libre',Georgia,serif;font-size:21px;font-weight:700;color:var(--brown);}
 .note{font-size:12px;color:#a8997f;margin-top:12px;line-height:1.6;}
@@ -384,7 +385,7 @@ td.t{text-align:left;white-space:nowrap;font-weight:600;}
       var items=CATALOG.filter(function(it){return it.c===k && (work.qty[it.n]||0)>0;});
       if(!items.length) return;
       var sub=items.reduce(function(s,it){return s+it.p*work.qty[it.n];},0);
-      html+='<div style="margin-bottom:14px;"><div class="cat">'+CATNAMES[k]+'<span class="s">'+fmt(sub)+'</span></div><table>';
+      html+='<div style="margin-bottom:14px;"><div class="cat">'+CATNAMES[k]+'<span class="s">'+fmt(sub)+'</span></div><table><tr class="qbh"><td>פריט</td><td class="u">כמות</td><td class="u">מחיר ליח׳</td><td class="t">סה״כ</td></tr>';
       items.forEach(function(it){ html+='<tr><td>'+esc(it.n)+'</td><td class="u">×'+work.qty[it.n]+'</td><td class="u">'+fmt(it.p)+'</td><td class="t">'+fmt(it.p*work.qty[it.n])+'</td></tr>'; });
       html+='</table></div>';
     });
